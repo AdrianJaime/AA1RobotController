@@ -13,6 +13,14 @@ namespace RobotController
         public float x;
         public float y;
         public float z;
+
+        public MyQuat(float _x, float _y, float _z, float _w)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+            w = _w;
+        }
     }
 
     public struct MyVec
@@ -21,6 +29,13 @@ namespace RobotController
         public float x;
         public float y;
         public float z;
+
+        public MyVec(float _x, float _y, float _z)
+        {
+            x = _x;
+            y = _y;
+            z = _z;
+        }
     }
 
 
@@ -49,10 +64,10 @@ namespace RobotController
         public void PutRobotStraight(out MyQuat rot0, out MyQuat rot1, out MyQuat rot2, out MyQuat rot3) {
 
             //todo: change this, use the function Rotate declared below
-            rot0 = NullQ;
-            rot1 = NullQ;
-            rot2 = NullQ;
-            rot3 = NullQ;
+            rot0 = Rotate(new MyQuat(0, 0, 0, 1), new MyVec(0, 1, 0), 73.434f);
+            rot1 = Multiply(rot0, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), -7.25f));
+            rot2 = Multiply(rot1, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), 69.372f));
+            rot3 = Multiply(rot2, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), 53.615f));
         }
 
 
@@ -160,25 +175,47 @@ namespace RobotController
             }
         }
 
-        internal MyQuat Multiply(MyQuat q1, MyQuat q2) {
+        internal MyQuat Multiply(MyQuat _q1, MyQuat _q2) {
 
             //todo: change this so it returns a multiplication:
-            return NullQ;
+            MyQuat q = new MyQuat();
+
+            q.x = (_q1.w * _q2.x) + (_q1.x * _q2.w) + (_q1.y * _q2.z) - (_q1.z * _q2.y);
+            q.y = (_q1.w * _q2.y) - (_q1.x * _q2.z) + (_q1.y * _q2.w) + (_q1.z * _q2.x);
+            q.z = (_q1.w * _q2.z) + (_q1.x * _q2.y) - (_q1.y * _q2.x) + (_q1.z * _q2.w);
+            q.w = (_q1.w * _q2.w) - (_q1.x * _q2.x) - (_q1.y * _q2.y) - (_q1.z * _q2.z);
+            return q;
 
         }
 
-        internal MyQuat Rotate(MyQuat currentRotation, MyVec axis, float angle)
+        internal MyQuat Rotate(MyQuat _rot, MyVec _axis, float _angle)
         {
 
-            //todo: change this so it takes currentRotation, and calculate a new quaternion rotated by an angle "angle" radians along the normalized axis "axis"
-            return NullQ;
 
+            MyQuat resultQuatAxisAngle = new MyQuat();
+
+            resultQuatAxisAngle.x = (float)(_axis.x * Math.Sin(_angle * Math.PI / 360));
+            resultQuatAxisAngle.y = (float)(_axis.y * Math.Sin(_angle * Math.PI / 360));
+            resultQuatAxisAngle.z = (float)(_axis.z * Math.Sin(_angle * Math.PI / 360));
+            resultQuatAxisAngle.w = (float)Math.Cos((_angle * Math.PI) / 360);
+
+            Normalize(resultQuatAxisAngle);
+
+            return Multiply(resultQuatAxisAngle, _rot);
         }
 
 
 
 
         //todo: add here all the functions needed
+        public void Normalize(MyQuat _q)
+        {
+            double m = Math.Sqrt(Math.Pow(_q.x, 2) + Math.Pow(_q.y, 2) + Math.Pow(_q.z, 2) + Math.Pow(_q.w, 2));
+            _q.x /= (float)m;
+            _q.y /= (float)m;
+            _q.z /= (float)m;
+            _q.w /= (float)m;
+        }
 
         #endregion
 
