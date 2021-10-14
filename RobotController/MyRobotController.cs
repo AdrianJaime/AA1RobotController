@@ -61,13 +61,15 @@ namespace RobotController
 
         //EX1: this function will place the robot in the initial position
 
-        public void PutRobotStraight(out MyQuat rot0, out MyQuat rot1, out MyQuat rot2, out MyQuat rot3) {
+        public void PutRobotStraight(out MyQuat rot0, out MyQuat rot1, out MyQuat rot2, out MyQuat rot3)
+        {
 
+            finished = false;
             //todo: change this, use the function Rotate declared below
-            rot0 = Rotate(new MyQuat(0, 0, 0, 1), new MyVec(0, 1, 0), 73.434f);
-            rot1 = Multiply(rot0, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), -7.25f));
-            rot2 = Multiply(rot1, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), 69.372f));
-            rot3 = Multiply(rot2, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), 53.615f));
+            rot0 = Rotate(new MyQuat(0, 0, 0, 1), new MyVec(0, 1, 0), exercise1Positions[0]);
+            rot1 = Multiply(rot0, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), exercise1Positions[1]));
+            rot2 = Multiply(rot1, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), exercise1Positions[2]));
+            rot3 = Multiply(rot2, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), exercise1Positions[3]));
         }
 
 
@@ -79,30 +81,48 @@ namespace RobotController
         public bool PickStudAnim(out MyQuat rot0, out MyQuat rot1, out MyQuat rot2, out MyQuat rot3)
         {
 
-            bool myCondition = false;
             //todo: add a check for your condition
-
-
+            if (!myCondition && !finished)
+            {
+                lerpValue = 0;
+                myCondition = true;
+            }
 
             if (myCondition)
             {
                 //todo: add your code here
+                lerpValue += 0.01f;
+
+                float angle0 = LerpRotations(0, exercise2Positions[0], lerpValue);
+                float angle1 = LerpRotations(exercise1Positions[1], exercise2Positions[1], lerpValue);
+                float angle2 = LerpRotations(exercise1Positions[2], exercise2Positions[2], lerpValue);
+                float angle3 = LerpRotations(exercise1Positions[3], exercise2Positions[3], lerpValue);
+
+                if (angle0 <= exercise2Positions[0] && angle1 >= exercise2Positions[1] && angle2 >= exercise2Positions[2] && angle3 <= exercise2Positions[3])
+                {
+                    myCondition = false;
+                    finished = true;
+                }
+
+                MyQuat aux0 = Rotate(new MyQuat(0, 0, 0, 1), new MyVec(0, 1, 0), exercise1Positions[0]);
+
+                rot0 = Rotate(aux0, new MyVec(0, 1, 0), angle0);
+                rot1 = Multiply(rot0, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle1));
+                rot2 = Multiply(rot1, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle2));
+                rot3 = Multiply(rot2, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle3));
+                return true;
+            }
+            else
+            {
+                //todo: remove this once your code works.
                 rot0 = NullQ;
                 rot1 = NullQ;
                 rot2 = NullQ;
                 rot3 = NullQ;
 
-
-                return true;
+                return false;
             }
 
-            //todo: remove this once your code works.
-            rot0 = NullQ;
-            rot1 = NullQ;
-            rot2 = NullQ;
-            rot3 = NullQ;
-
-            return false;
         }
 
 
@@ -113,20 +133,34 @@ namespace RobotController
         public bool PickStudAnimVertical(out MyQuat rot0, out MyQuat rot1, out MyQuat rot2, out MyQuat rot3)
         {
 
-            bool myCondition = false;
+            bool myCondition = true;
             //todo: add a check for your condition
 
+            float lerpValue = 0;
 
-
-            while (myCondition)
+            if (myCondition)
             {
                 //todo: add your code here
+                lerpValue += 0.01f;
 
+                float angle0 = LerpRotations(exercise1Positions[0], exercise2Positions[0], lerpValue);
+                float angle1 = LerpRotations(exercise1Positions[1], exercise2Positions[1], lerpValue);
+                float angle2 = LerpRotations(exercise1Positions[2], exercise2Positions[2], lerpValue);
+                float angle3 = LerpRotations(exercise1Positions[3], exercise2Positions[3], lerpValue);
 
+                if (angle0 >= exercise2Positions[0] && angle1 >= exercise2Positions[1] && angle2 >= exercise2Positions[2] && angle3 >= exercise2Positions[3])
+                {
+                    myCondition = false;
+                }
+                rot0 = Rotate(new MyQuat(0, 0, 0, 1), new MyVec(0, 1, 0), angle0);
+                rot1 = Multiply(rot0, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle1));
+                rot2 = Multiply(rot1, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle2));
+                rot3 = Multiply(rot2, Rotate(new MyQuat(0, 0, 0, 1), new MyVec(1, 0, 0), angle3));
+                return true;
             }
 
-            //todo: remove this once your code works.
-            rot0 = NullQ;
+            else//todo: remove this once your code works.
+                rot0 = NullQ;
             rot1 = NullQ;
             rot2 = NullQ;
             rot3 = NullQ;
@@ -158,6 +192,12 @@ namespace RobotController
 
         #region private and internal methods
 
+        float[] exercise1Positions = { 73.434f, -7.25f, 69.372f, 53.615f };
+        float[] exercise2Positions = { -36.495f, 0.0f, 76.768f, 22.703f };
+        float lerpValue = 0;
+        bool myCondition = false;
+        bool finished = false;
+
         internal int TimeSinceMidnight { get { return (DateTime.Now.Hour * 3600000) + (DateTime.Now.Minute * 60000) + (DateTime.Now.Second * 1000) + DateTime.Now.Millisecond; } }
 
 
@@ -175,7 +215,8 @@ namespace RobotController
             }
         }
 
-        internal MyQuat Multiply(MyQuat _q1, MyQuat _q2) {
+        internal MyQuat Multiply(MyQuat _q1, MyQuat _q2)
+        {
 
             //todo: change this so it returns a multiplication:
             MyQuat q = new MyQuat();
@@ -219,7 +260,10 @@ namespace RobotController
 
         #endregion
 
-
+        public float LerpRotations(float _start, float _end, float _lerpValue)
+        {
+            return _start + _lerpValue * (_end - _start);
+        }
 
 
 
